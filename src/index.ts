@@ -13,6 +13,10 @@ app.get("/send", (req: Request, res: Response) => {
   res.send("Send Page");
 });
 
+app.get("/twitter", (req: Request, res: Response) => {
+  res.send("Twitter Page");
+});
+
 app.listen(process.env.PORT, () => {
   console.log("server is running on port " + process.env.PORT);
 });
