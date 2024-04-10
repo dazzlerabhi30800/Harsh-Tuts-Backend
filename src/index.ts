@@ -1,21 +1,13 @@
-import express, { Response, Request } from "express";
-import { config } from "dotenv";
-config({});
-
+import express from "express";
 const app = express();
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World");
+import { config } from "dotenv";
+import { connectDB } from "./db/index";
+config({
+  path: "./.env",
 });
 
-app.get("/send", (req: Request, res: Response) => {
-  res.send("Send Page");
-});
-
-app.get("/twitter", (req: Request, res: Response) => {
-  res.send("Twitter Page");
-});
+connectDB();
 
 app.listen(process.env.PORT, () => {
-  console.log("server is running on port " + process.env.PORT);
+  console.log("server is running on port 4000");
 });
