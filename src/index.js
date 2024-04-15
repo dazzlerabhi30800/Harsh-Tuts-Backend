@@ -5,9 +5,11 @@ config({
   path: "./.env",
 });
 
+const portValue = process.env.PORT || 8000;
+
 connectDB()
   .then((res) => {
-    app.listen(process.env.PORT || 8000, () => {
+    app.listen(portValue, () => {
       console.log(`Server is running on port ${process.env.PORT}`);
     });
   })
