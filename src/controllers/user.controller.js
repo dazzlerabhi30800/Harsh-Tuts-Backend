@@ -5,17 +5,18 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
+  console.log(userId);
   try {
     const user = await User.findById(userId);
     const refreshToken = await user.generateRefreshToken();
     const accessToken = await user.generateAccessToken();
 
     user.refreshToken = refreshToken;
-    user.save({ validateBeforeSave: false });
+    await user.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
-  } catch (err) {
-    throw new ApiError(500, "Something wen't wrong");
+  } catch (error) {
+    throw new ApiError(500, "Something wen't wrong really");
   }
 };
 
@@ -23,12 +24,6 @@ const generateAccessAndRefreshToken = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   // first extract the email, name & password from res.body
   const { fullName, username, email, password } = req.body;
-  const userInfo = {
-    fullName,
-    username,
-    email,
-    password,
-  };
   // validation not empty
   if (
     [fullName, username, email, password].some((field) => field?.trim() === "")
@@ -88,9 +83,10 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   // extract the email & password
   const { email, username, password } = req.body;
-  if (!username || !email) {
+  if (!username && !email) {
     throw new ApiError(400, "username or email is required");
   }
+  // check if user exist or not
   const user = await User.findOne({
     $or: [{ username }, { email }],
   });
@@ -98,14 +94,18 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "user not found");
   }
 
-  const passwordCorrect = await user.isPasswordCorrect(user.password);
+  // if user exist check if user entered the correct password
+  const passwordCorrect = await user.isPasswordCorrect(password);
   if (!passwordCorrect) {
     throw new ApiError(400, "password you entered is not valid");
   }
 
+  // generate accessToken & refresh token
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user._id
   );
+  console.log(accessToken);
+  // we are extracting user here again because above declared doesn't have refreshToken set
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
@@ -115,6 +115,7 @@ const loginUser = asyncHandler(async (req, res) => {
     secure: true,
   };
 
+  //  set cookies
   res
     .status(200)
     .cookie("accessToken", accessToken, options)
@@ -130,10 +131,6 @@ const loginUser = asyncHandler(async (req, res) => {
         "User Logged Successfully"
       )
     );
-  // check if the user exist if not redirect to home page (redirect part is for frontend)
-
-  // password check
-  // access & refresh token
 });
 
 // LOGOUT USER CONTROLLER
