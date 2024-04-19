@@ -35,7 +35,7 @@ router
   .route("/avatar")
   .post(verifyJWT, upload.single("avatar"), updateUserAvatar);
 router
-  .route("/cover-image")
+  .route("/coverImage")
   .post(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
 router.route("/currentUser").get(verifyJWT, getCurrentUser);
 

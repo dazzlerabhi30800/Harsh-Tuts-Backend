@@ -30,8 +30,16 @@ const userSchema = new mongoose.Schema(
       type: String, // cloudinary url
       required: true,
     },
+    avatarPublicId: {
+      type: String, //  Avatar image public id to delete when updating the avatar image
+      required: true,
+    },
     coverImage: {
       type: String, //cloudinary url
+    },
+    coverImagePublicId: {
+      type: String, //  cover image public id to delete when updating the cover image
+      required: true,
     },
     watchHistory: {
       type: Schema.Types.ObjectId,
