@@ -41,10 +41,12 @@ const userSchema = new mongoose.Schema(
       type: String, //  cover image public id to delete when updating the cover image
       required: true,
     },
-    watchHistory: {
-      type: Schema.Types.ObjectId,
-      ref: "Video",
-    },
+    watchHistory: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Video",
+      },
+    ],
     password: {
       type: String,
       required: [true, "password is required"],
