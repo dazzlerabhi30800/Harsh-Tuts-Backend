@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -376,6 +377,66 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, "Channel Found"));
 });
 
+const getWatchHistory = asyncHandler(async (req, res) => {
+  console.log(req.user);
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(req.user._id),
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                    owner: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+  console.log("user");
+  console.log(user);
+  if (!user.length) {
+    throw new ApiError(404, "video history not found");
+  }
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user[0].watchHistory,
+        "Watch History found successfully"
+      )
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -387,4 +448,5 @@ export {
   updateUserAvatar,
   updateUserCoverImage,
   getUserChannelProfile,
+  getWatchHistory,
 };
